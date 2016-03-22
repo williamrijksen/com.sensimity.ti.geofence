@@ -1,8 +1,8 @@
 /**
  * TiSensimityGeofence
  *
- * Created by Your Name
- * Copyright (c) 2016 Your Company. All rights reserved.
+ * Created by William Rijksen
+ * Copyright (c) 2016 Enrise. All rights reserved.
  */
 
 #import "ComSensimityTiGeofenceModule.h"
@@ -26,50 +26,102 @@
 	return @"com.sensimity.ti.geofence";
 }
 
-#pragma mark Lifecycle
-
--(void)startup
+- (CLLocationManager *)locationManager
 {
-	// this method is called when the module is first loaded
-	// you *must* call the superclass
-	[super startup];
-}
-
--(void)shutdown:(id)sender
-{
-	// this method is called when the module is being unloaded
-	// typically this is during shutdown. make sure you don't do too
-	// much processing here or the app will be quit forceably
-
-	// you *must* call the superclass
-	[super shutdown:sender];
+    if (_locationManager) {
+        return _locationManager;
+    } else {
+        _locationManager = [[CLLocationManager alloc] init];
+        _locationManager.delegate = self;
+        [_locationManager requestAlwaysAuthorization];
+        return _locationManager;
+    }
 }
 
 #pragma mark Cleanup
 
 -(void)dealloc
 {
-	// release any resources that have been retained by the module
+    if (self.locationManager) {
+        [self.locationManager release];
+    }
 	[super dealloc];
 }
 
 #pragma Public APIs
 
--(id)example:(id)args
+-(void) startMonitoringForRegion:(id)args
 {
-	// example method
-	return @"hello world";
+    ENSURE_UI_THREAD_1_ARG(args);
+    ENSURE_SINGLE_ARG(args, NSDictionary);
+
+    CLCircularRegion *region = [self regionForArgs:args];
+
+    NSLog(@"[INFO] Turning on region monitoring in %@", region);
+
+    [self.locationManager startMonitoringForRegion:region];
 }
 
--(id)exampleProp
+-(void)stopMonitoringAllRegions:(id)args
 {
-	// example property getter
-	return @"hello world";
+    for(id region in self.locationManager.monitoredRegions) {
+        [self.locationManager stopMonitoringForRegion:region];
+    }
+
+    NSLog(@"[INFO] Turned off monitoring in ALL regions.");
 }
 
--(void)setExampleProp:(id)value
+#pragma Create region
+
+- (CLCircularRegion *)regionForArgs:(id)args
 {
-	// example property setter
+    CGFloat latitude = [TiUtils floatValue:[args objectForKey:@"latitude"]];
+    CGFloat longitude = [TiUtils floatValue:[args objectForKey:@"longitude"]];
+    CGFloat radius = [TiUtils floatValue:[args objectForKey:@"radius"]];
+
+    NSString *identifier = [TiUtils stringValue:[args objectForKey:@"identifier"]];
+
+    CLCircularRegion *region = [self createCircularRegionWithLatitude: latitude
+        longitude: longitude
+        radius: radius
+		identifier: identifier
+    ];
+
+    return region;
+}
+
+- (CLCircularRegion *)createCircularRegionWithLatitude:(CLLocationDegrees)latitude longitude:(CLLocationDegrees)longitude radius:(NSInteger)radius identifier:(NSString *)identifier
+{
+	CLLocationCoordinate2D center = CLLocationCoordinate2DMake(latitude, longitude);
+	CLCircularRegion *region = [[CLCircularRegion alloc] initWithCenter:center radius:radius identifier:identifier];
+
+    return [region autorelease];
+}
+
+#pragma Fire event after enter or exit region
+
+- (void)locationManager:(CLLocationManager *)manager didEnterRegion:(CLRegion *)region
+{
+    NSLog(@"[INFO] Entered region %@", region.identifier);
+
+    [self fireEvent:@"enteredRegion" withObject:[self detailsForBeaconRegion:(CLCircularRegion *)region]];
+}
+
+-(void)locationManager:(CLLocationManager *)manager didExitRegion:(CLRegion *)region
+{
+    NSLog(@"[INFO] exited region %@", region.identifier);
+
+    [self fireEvent:@"exitedRegion" withObject:[self detailsForBeaconRegion:(CLCircularRegion *)region]];
+}
+
+- (NSDictionary *)detailsForBeaconRegion:(CLBeaconRegion *)region
+{
+    NSMutableDictionary *details = [[NSMutableDictionary alloc] initWithObjectsAndKeys:
+                             region.identifier, @"identifier",
+                             nil
+    ];
+
+    return details;
 }
 
 @end

@@ -93,8 +93,6 @@
 		08FB77AEFE84172EC02AAC07 /* Classes */ = {
 			isa = PBXGroup;
 			children = (
-				24DE9E0F11C5FE74003F90F6 /* ComSensimityTiGeofenceModuleAssets.h */,
-				24DE9E1011C5FE74003F90F6 /* ComSensimityTiGeofenceModuleAssets.m */,
 				24DD6CF71134B3F500162E58 /* ComSensimityTiGeofenceModule.h */,
 				24DD6CF81134B3F500162E58 /* ComSensimityTiGeofenceModule.m */,
 			);
@@ -119,7 +117,6 @@
 			files = (
 				AA747D9F0F9514B9006C5449 /* ComSensimityTiGeofence_Prefix.pch in Headers */,
 				24DD6CF91134B3F500162E58 /* ComSensimityTiGeofenceModule.h in Headers */,
-				24DE9E1111C5FE74003F90F6 /* ComSensimityTiGeofenceModuleAssets.h in Headers */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -194,7 +191,6 @@
 			buildActionMask = 2147483647;
 			files = (
 				24DD6CFA1134B3F500162E58 /* ComSensimityTiGeofenceModule.m in Sources */,
-				24DE9E1211C5FE74003F90F6 /* ComSensimityTiGeofenceModuleAssets.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
